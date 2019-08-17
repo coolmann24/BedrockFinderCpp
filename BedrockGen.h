@@ -1,3 +1,5 @@
+#include <cstdint>
+#include "PrecomputedRandAdvance.h"
 
 inline int64_t rawSeedFromChunk(int x, int z) //chunk coordinates
 {
