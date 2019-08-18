@@ -1,4 +1,5 @@
 #include "BFFGui.h"
+#include "GPUSearch.h"
 #include <iostream>
 
 BFFGui::BFFGui() : 
@@ -57,8 +58,15 @@ BFFGui::BFFGui() :
 	context_choice_ = std::make_unique<wxChoice>(this, 1, wxPoint(50, 130), wxSize(180, 30), 5, contexts);
 	context_choice_->SetSelection(0);
 
-	wxString devices[2] = { wxString("CPU"), wxString("GPU") };
-	device_choice_ = std::make_unique<wxChoice>(this, 2, wxPoint(50, 50), wxSize(180, 30), 2, devices);
+	std::vector<std::string> gpus;
+	getGPUDevices(gpus);
+
+	wxArrayString device_strings;
+	device_strings.Add("CPU");
+	for (const auto& gpu : gpus)
+		device_strings.Add(wxString(gpu));
+
+	device_choice_ = std::make_unique<wxChoice>(this, 2, wxPoint(50, 50), wxSize(180, 30), device_strings);
 	device_choice_->SetSelection(0);
 
 	textlog_ << "bunch of random ass text";

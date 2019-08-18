@@ -1,5 +1,5 @@
 #include <vector>
-#include <set>
+#include <map>
 #include <tuple>
 #include <functional>
 #include <iostream>
@@ -11,7 +11,7 @@ enum FormType : bool{
 };
 
 using BedrockGenFunc = std::function<bool(int, int, int)>;
-using Formation = std::set<std::tuple<int, int, int, FormType>>;
+using Formation = std::map<std::tuple<int, int, int>, FormType>;
 using Bounds = std::tuple<int, int, int, int, int, int>;//xmin, xmax, zmin, zmax, ymin, ymax
 
 void search(Bounds bounds, Formation form, BedrockGenFunc func)
@@ -24,7 +24,7 @@ void search(Bounds bounds, Formation form, BedrockGenFunc func)
 
 				for (const auto& point : form)
 				{
-					found = std::get<3>(point) == func(std::get<0>(point) + x, std::get<1>(point) + y, std::get<2>(point) + z);
+					found = point.second == func(std::get<0>(point.first) + x, std::get<1>(point.first) + y, std::get<2>(point.first) + z);
 					if (!found)break;
 				}
 

@@ -44,7 +44,7 @@ inline bool bedrockOverworld112(int x, int y, int z)
 
 	int precomp_ind = precompChunkIndCalcNormal(x & 15, y - 1, z & 15, false);
 
-	return rand5(rawSeedFromChunk(x < 0 ? -1 + ((x + 1) / 16) : x / 16, z < 0 ? -1 + ((z + 1) / 16) : z / 16), A_OW_112[precomp_ind], B_OW_112[precomp_ind]) >= y;
+	return rand5(rawSeedFromChunk(x >> 4, z >> 4), A_OW_112[precomp_ind], B_OW_112[precomp_ind]) >= y;
 }
 
 bool bedrockOverworld113(int x, int y, int z)
@@ -59,7 +59,7 @@ bool bedrockOverworld113(int x, int y, int z)
 	bool found = false;
 
 	for (int i = 0; i < count; i++)
-		found = found || rand5(rawSeedFromChunk(x < 0 ? -1 + ((x + 1) / 16) : x / 16, z < 0 ? -1 + ((z + 1) / 16) : z / 16), A_OW_113_114[inds[i]], B_OW_113_114[inds[i]]) >= y;
+		found = found || rand5(rawSeedFromChunk(x >> 4, z >> 4), A_OW_113_114[inds[i]], B_OW_113_114[inds[i]]) >= y;
 	return found;
 }
 
@@ -70,7 +70,7 @@ bool bedrockOverworld114(int x, int y, int z)
 
 	int precomp_ind = precompChunkIndCalcNormal(x & 15, y - 1, z & 15, false);
 
-	return rand5(rawSeedFromChunk(x < 0 ? -1 + ((x + 1) / 16) : x / 16, z < 0 ? -1 + ((z + 1) / 16) : z / 16), A_OW_113_114[precomp_ind], B_OW_113_114[precomp_ind]) >= y;
+	return rand5(rawSeedFromChunk(x >> 4, z >> 4), A_OW_113_114[precomp_ind], B_OW_113_114[precomp_ind]) >= y;
 }
 
 bool bedrockNether113(int x, int y, int z)
@@ -85,8 +85,8 @@ bool bedrockNether113(int x, int y, int z)
 	bool found = false;
 
 	for (int i = 0; i < count; i++)
-		found = found || (y > 4 ? (4 - rand5(rawSeedFromChunk(x < 0 ? -1 + ((x + 1) / 16) : x / 16, z < 0 ? -1 + ((z + 1) / 16) : z / 16), A_N_113_114[inds[i]], B_N_113_114[inds[i]]) <= y - 123) :
-		(rand5(rawSeedFromChunk(x < 0 ? -1 + ((x + 1) / 16) : x / 16, z < 0 ? -1 + ((z + 1) / 16) : z / 16), A_N_113_114[inds[i]], B_N_113_114[inds[i]]) >= y));
+		found = found || (y > 4 ? (4 - rand5(rawSeedFromChunk(x >> 4, z >> 4), A_N_113_114[inds[i]], B_N_113_114[inds[i]]) <= y - 123) :
+		(rand5(rawSeedFromChunk(x >> 4, z >> 4), A_N_113_114[inds[i]], B_N_113_114[inds[i]]) >= y));
 
 	return found;
 }
@@ -98,6 +98,6 @@ bool bedrockNether114(int x, int y, int z)
 
 	int precomp_ind = precompChunkIndCalcNormal(x & 15, y > 4 ? y - 119 : y - 1, z & 15, true);
 
-	return y > 4 ? 4 - rand5(rawSeedFromChunk(x < 0 ? -1 + ((x + 1) / 16) : x / 16, z < 0 ? -1 + ((z + 1) / 16) : z / 16), A_N_113_114[precomp_ind], B_N_113_114[precomp_ind]) <= y - 123 :
-		rand5(rawSeedFromChunk(x < 0 ? -1 + ((x + 1) / 16) : x / 16, z < 0 ? -1 + ((z + 1) / 16) : z / 16), A_N_113_114[precomp_ind], B_N_113_114[precomp_ind]) >= y;
+	return y > 4 ? 4 - rand5(rawSeedFromChunk(x >> 4, z >> 4), A_N_113_114[precomp_ind], B_N_113_114[precomp_ind]) <= y - 123 :
+		rand5(rawSeedFromChunk(x >> 4, z >> 4), A_N_113_114[precomp_ind], B_N_113_114[precomp_ind]) >= y;
 }
