@@ -37,7 +37,7 @@ inline void precompChunkIndCalc113(int* inds, int& count, int x, int y, int z, b
 	}
 }
 
-inline bool bedrockOverworld112(int x, int y, int z)
+bool bedrockOverworld112(int x, int y, int z)
 {
 	if (y == 0) return true;
 	if (y < 0 || y > 4) return false;

@@ -1,6 +1,4 @@
-#define CL_USE_DEPRECATED_OPENCL_1_2_APIS
-
-#include <CL\cl.hpp>
+#include <CL\cl2.hpp>
 #include "BedrockSearch.h"
 #include <map>
 
@@ -51,8 +49,8 @@ bool GPUSearch(const std::string& context, const std::string& device, const Form
 	}
 
 	if (!valid_device) return false;
-
-	cl::Context context(gpu_to_use);
+	return true;
+	//cl::Context context(gpu_to_use);
 
 	//continue
 }
