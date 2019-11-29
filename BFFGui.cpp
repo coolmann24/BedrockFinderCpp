@@ -8,6 +8,7 @@
 #include <memory>
 #include <wx/wx.h>
 
+
 wxDEFINE_EVENT(LOG_EVENT, wxCommandEvent);
 wxDEFINE_EVENT(SEARCH_END_EVENT, wxCommandEvent);
 
@@ -44,7 +45,7 @@ BFFGui::BFFGui() :
 	z_min_(this, 2, wxString("-1000"), wxPoint(50, 450), wxSize(90, 30)),
 	z_max_(this, 2, wxString("1000"), wxPoint(140, 450), wxSize(90, 30)),
 
-	numresults_label_(this, 2, wxString("MAX RESULTS (GPU)"), wxPoint(310, 20), wxSize(180, 20), wxALIGN_CENTRE_HORIZONTAL),
+	numresults_label_(this, 2, wxString("MAX RESULTS"), wxPoint(310, 20), wxSize(180, 20), wxALIGN_CENTRE_HORIZONTAL),
 	numresults_(this, 2, wxString("100"), wxPoint(310, 50), wxSize(180, 30)),
 
 	relative_coords_label_(this, 2, wxString("RELATIVE COORDS\n X ---- Y ---- Z          "), wxPoint(310, 100), wxSize(180, 40), wxALIGN_CENTRE_HORIZONTAL),
@@ -60,12 +61,10 @@ BFFGui::BFFGui() :
 
 	search_label_(this, 2, wxString("SEARCH"), wxPoint(310, 300), wxSize(180, 20), wxALIGN_CENTRE_HORIZONTAL),
 	search_(this, 1005, wxString("BEGIN"), wxPoint(310, 330), wxSize(180, 30)),
-	searching_(false),
+	searching_(false), gpu_searching_(false),
 
 	progress_label_(this, 2, wxString("PROGRESS (CPU)"), wxPoint(310, 420), wxSize(180, 20), wxALIGN_CENTRE_HORIZONTAL),
-	progress_(this, 2, wxString("0%"), wxPoint(310, 460), wxSize(180, 20), wxALIGN_CENTRE_HORIZONTAL),
-	
-	results_pending_(0)
+	progress_(this, 2, wxString("0%"), wxPoint(310, 460), wxSize(180, 20), wxALIGN_CENTRE_HORIZONTAL)
 {	
 	wxTheApp->Bind(LOG_EVENT, &BFFGui::log, this, 1006);
 	wxTheApp->Bind(SEARCH_END_EVENT, &BFFGui::endSearch, this, 1007);
@@ -183,16 +182,15 @@ void BFFGui::onResetClicked(wxCommandEvent& evt)
 
 void BFFGui::endSearch(wxCommandEvent& evt)
 {
+	searching_ = false;
+	current_search_.join();
 	*textlog_ << evt.GetString();
 	search_.SetLabel("BEGIN");
-	current_search_ = nullptr;
-	searching_ = false;
 }
 
 void BFFGui::log(wxCommandEvent& evt)
 {
 	*textlog_ << evt.GetString();
-	results_pending_--;
 }
 
 void BFFGui::onSearch(wxCommandEvent& evt)
@@ -209,6 +207,8 @@ void BFFGui::onSearch(wxCommandEvent& evt)
 
 	int bounds[6];
 	int num_threads;
+	int num_results;
+	std::string device;
 
 	try
 	{
@@ -222,10 +222,25 @@ void BFFGui::onSearch(wxCommandEvent& evt)
 		bounds[5] = std::stoi(std::string(y_max_.GetValue()));
 
 		num_threads = std::stoi(std::string(thread_count_.GetValue()));
+
+		num_results = std::stoi(std::string(numresults_.GetValue()));
+
+		device = device_choice_.get()->GetString(device_choice_.get()->GetCurrentSelection());
 	}
 	catch (...)
 	{
 		*textlog_ << "Search parameters invalid\n";
+		return;
+	}
+
+	searching_ = true;
+	search_.SetLabel("END");
+	num_results_left_ = num_results;
+
+	if (device != "CPU")
+	{
+		gpu_searching_ = true;
+		current_search_ = std::thread(GPUSearch, std::string(context_choice_->GetStringSelection()), device, formation_, std::make_tuple(bounds[0], bounds[1], bounds[2], bounds[3], bounds[4], bounds[5]), num_results);
 		return;
 	}
 
@@ -242,15 +257,11 @@ void BFFGui::onSearch(wxCommandEvent& evt)
 	else if (context_choice_->GetStringSelection() == "1.14 Nether")
 		bedrock_gen_func = bedrockNether114;
 
-	searching_ = true;
-	search_.SetLabel("END");
-
-	current_search_ = new std::thread(threadedSearch,
+	current_search_ = std::thread(threadedSearch,
 		std::make_tuple(bounds[0], bounds[1], bounds[2], bounds[3], bounds[4], bounds[5]),
 		formation_,
 		bedrock_gen_func,
 		num_threads,
 		&searching_,
-		&results_pending_);
+		&num_results_left_);
 }
-

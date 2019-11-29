@@ -52,9 +52,9 @@ private:
 	void log(wxCommandEvent& evt);
 
 	std::map<std::tuple<int, int, int>, bool> formation_;
-	std::atomic_bool searching_;
-	std::atomic_int results_pending_;
-	std::thread* current_search_;
+	std::atomic_bool searching_, gpu_searching_;
+	std::atomic_int num_results_left_;
+	std::thread current_search_;
 
 	wxDECLARE_EVENT_TABLE();
 	
