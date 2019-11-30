@@ -11,6 +11,7 @@
 
 wxDEFINE_EVENT(LOG_EVENT, wxCommandEvent);
 wxDEFINE_EVENT(SEARCH_END_EVENT, wxCommandEvent);
+wxDEFINE_EVENT(LOG_PROGRESS_EVENT, wxCommandEvent);
 
 wxBEGIN_EVENT_TABLE(BFFGui, wxFrame)
 	EVT_BUTTON(1001, onAddClicked)
@@ -20,6 +21,7 @@ wxBEGIN_EVENT_TABLE(BFFGui, wxFrame)
 	EVT_BUTTON(1005, onSearch)
 	EVT_COMMAND(1006, LOG_EVENT, log)
 	EVT_COMMAND(1007, SEARCH_END_EVENT, endSearch)
+	EVT_COMMAND(1008, LOG_PROGRESS_EVENT, logProgress)
 wxEND_EVENT_TABLE()
 
 
@@ -61,13 +63,14 @@ BFFGui::BFFGui() :
 
 	search_label_(this, 2, wxString("SEARCH"), wxPoint(310, 300), wxSize(180, 20), wxALIGN_CENTRE_HORIZONTAL),
 	search_(this, 1005, wxString("BEGIN"), wxPoint(310, 330), wxSize(180, 30)),
-	searching_(false), gpu_searching_(false),
+	searching_(false),
 
 	progress_label_(this, 2, wxString("PROGRESS (CPU)"), wxPoint(310, 420), wxSize(180, 20), wxALIGN_CENTRE_HORIZONTAL),
 	progress_(this, 2, wxString("0%"), wxPoint(310, 460), wxSize(180, 20), wxALIGN_CENTRE_HORIZONTAL)
 {	
 	wxTheApp->Bind(LOG_EVENT, &BFFGui::log, this, 1006);
 	wxTheApp->Bind(SEARCH_END_EVENT, &BFFGui::endSearch, this, 1007);
+	wxTheApp->Bind(LOG_PROGRESS_EVENT, &BFFGui::logProgress, this, 1008);
 
 	context_label_.SetFont(wxFont(wxFontInfo(12)));
 	device_label_.SetFont(wxFont(wxFontInfo(12)));
@@ -183,7 +186,8 @@ void BFFGui::onResetClicked(wxCommandEvent& evt)
 void BFFGui::endSearch(wxCommandEvent& evt)
 {
 	searching_ = false;
-	current_search_.join();
+	if(current_search_.joinable())
+		current_search_.join();
 	*textlog_ << evt.GetString();
 	search_.SetLabel("BEGIN");
 }
@@ -191,6 +195,12 @@ void BFFGui::endSearch(wxCommandEvent& evt)
 void BFFGui::log(wxCommandEvent& evt)
 {
 	*textlog_ << evt.GetString();
+}
+
+void BFFGui::logProgress(wxCommandEvent& evt)
+{
+	progress_.SetLabel(evt.GetString());
+	progress_.Refresh();
 }
 
 void BFFGui::onSearch(wxCommandEvent& evt)
@@ -233,13 +243,13 @@ void BFFGui::onSearch(wxCommandEvent& evt)
 		return;
 	}
 
+	*textlog_ << "Beginning Search\n";
 	searching_ = true;
 	search_.SetLabel("END");
 	num_results_left_ = num_results;
 
 	if (device != "CPU")
 	{
-		gpu_searching_ = true;
 		current_search_ = std::thread(GPUSearch, std::string(context_choice_->GetStringSelection()), device, formation_, std::make_tuple(bounds[0], bounds[1], bounds[2], bounds[3], bounds[4], bounds[5]), num_results);
 		return;
 	}

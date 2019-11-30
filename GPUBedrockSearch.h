@@ -120,8 +120,8 @@ bool GPUSearch(const std::string& context, const std::string& device, const Form
 	
 	//return true;
 
-	int form_arr_size = 4 * form.size();
-	int* arr_form = new int[form_arr_size];
+	int form_size = form.size();
+	int* arr_form = new int[4*form_size];
 	
 	int count = 0;
 	for (const auto& e : form)
@@ -136,16 +136,16 @@ bool GPUSearch(const std::string& context, const std::string& device, const Form
 	int results_start_ind = 0;
 	int num_results = max_num_results;
 	int* results = new int[num_results*3];
-	int* x_z_offset = new int[2]{ std::get<0>(bounds), std::get<2>(bounds) };
+	int* coord_offset = new int[3]{ std::get<0>(bounds), std::get<4>(bounds), std::get<2>(bounds) };
 
 	cl::Buffer a_buf(cl_context, CL_MEM_READ_ONLY | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(int64_t) * precomp_arr_size, a);
 	cl::Buffer b_buf(cl_context, CL_MEM_READ_ONLY | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(int64_t) * precomp_arr_size, b);
-	cl::Buffer formation_buf(cl_context, CL_MEM_READ_ONLY | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(int) * form_arr_size, arr_form);
-	cl::Buffer formation_size_buf(cl_context, CL_MEM_READ_ONLY | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(int), &form_arr_size);
+	cl::Buffer formation_buf(cl_context, CL_MEM_READ_ONLY | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(int) * form_size * 4, arr_form);
+	cl::Buffer formation_size_buf(cl_context, CL_MEM_READ_ONLY | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(int), &form_size);
 	cl::Buffer results_ind_buf(cl_context, CL_MEM_READ_WRITE | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(int), &results_start_ind);
 	cl::Buffer num_results_buf(cl_context, CL_MEM_READ_ONLY | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(int), &num_results);
 	cl::Buffer results_buf(cl_context, CL_MEM_WRITE_ONLY | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(int)*num_results*3, results);
-	cl::Buffer x_z_offsets_buf(cl_context, CL_MEM_READ_ONLY | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(int)*2, x_z_offset);
+	cl::Buffer coord_offsets_buf(cl_context, CL_MEM_READ_ONLY | CL_MEM_HOST_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(int)*3, coord_offset);
 
 	cl::Kernel kernel(program, "hasFormation");
 	kernel.setArg(0, a_buf);
@@ -155,19 +155,33 @@ bool GPUSearch(const std::string& context, const std::string& device, const Form
 	kernel.setArg(4, results_ind_buf);
 	kernel.setArg(5, num_results_buf);
 	kernel.setArg(6, results_buf);
-	kernel.setArg(7, x_z_offsets_buf);
+	kernel.setArg(7, coord_offsets_buf);
 
 	cl::CommandQueue queue(cl_context, gpu_to_use);
-	queue.enqueueNDRangeKernel(kernel, cl::NDRange(NULL), cl::NDRange(std::get<1>(bounds) - std::get<0>(bounds), std::get<5>(bounds) - std::get<4>(bounds), std::get<3>(bounds) - std::get<2>(bounds)));
+	queue.enqueueNDRangeKernel(kernel, cl::NDRange(NULL), cl::NDRange(std::get<1>(bounds) - std::get<0>(bounds) + 1, std::get<5>(bounds) - std::get<4>(bounds) + 1, std::get<3>(bounds) - std::get<2>(bounds) + 1));
 	queue.finish();
 	queue.enqueueReadBuffer(results_buf, CL_TRUE, 0, sizeof(int) * num_results * 3, results);
 	queue.finish();
-	std::vector<std::tuple<int, int, int>> resvec;
-	for (int i = 0; i < num_results; i++)
+	queue.enqueueReadBuffer(results_ind_buf, CL_TRUE, 0, sizeof(int), &results_start_ind);
+	queue.finish();
+	std::string log_result;
+
+	for (int i = 0; i < std::min(num_results, results_start_ind); i++)
 	{
-		resvec.push_back(std::make_tuple(results[i * 3], results[i * 3 + 1], results[i * 3 + 2]));
+		log_result += "X: " + std::to_string(results[i * 3]) + " Z: " + std::to_string(results[i * 3 + 2]) + "\n";
 	}
 
-	std::cout << 1;
+	wxCommandEvent* evt = new wxCommandEvent;
+	evt->SetId(1006);
+	evt->SetEventType(LOG_EVENT);
+	evt->SetString(log_result.c_str());
+	wxTheApp->QueueEvent(evt);
+
+	wxCommandEvent* evt2 = new wxCommandEvent;
+	evt2->SetId(1007);
+	evt2->SetString("Done searching\n");
+	evt2->SetEventType(SEARCH_END_EVENT);
+	wxTheApp->QueueEvent(evt2);
+
 	return true;
 }
