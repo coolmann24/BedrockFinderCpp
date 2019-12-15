@@ -183,5 +183,9 @@ bool GPUSearch(const std::string& context, const std::string& device, const Form
 	evt2->SetEventType(SEARCH_END_EVENT);
 	wxTheApp->QueueEvent(evt2);
 
+	delete[] arr_form;
+	delete[] results;
+	delete[] coord_offset;
+
 	return true;
 }
