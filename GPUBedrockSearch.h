@@ -85,7 +85,7 @@ bool GPUSearch(const std::string& context, const std::string& device, const Form
 		precomp_arr_size = A_OW_113_114.size();
 		get_bedrock_func = OW113;
 	}
-	else if (context == "1.14 Overworld")
+	else if (context == "1.14/1.15 Overworld")
 	{
 		a = A_OW_113_114.data();
 		b = B_OW_113_114.data();
@@ -99,7 +99,7 @@ bool GPUSearch(const std::string& context, const std::string& device, const Form
 		precomp_arr_size = A_N_113_114.size();
 		get_bedrock_func = N113;
 	}
-	else if (context == "1.14 Nether")
+	else if (context == "1.14/1.15 Nether")
 	{
 		a = A_N_113_114.data();
 		b = B_N_113_114.data();

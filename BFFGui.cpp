@@ -84,7 +84,7 @@ BFFGui::BFFGui() :
 	progress_label_.SetFont(wxFont(wxFontInfo(12)));
 	progress_.SetFont(wxFont(wxFontInfo(12)));
 
-	wxString contexts[5] = { wxString("1.12 Overworld"), wxString("1.13 Overworld"), wxString("1.14 Overworld"), wxString("1.13 Nether"), wxString("1.14 Nether") };
+	wxString contexts[5] = { wxString("1.12 Overworld"), wxString("1.13 Overworld"), wxString("1.14/1.15 Overworld"), wxString("1.13 Nether"), wxString("1.14/1.15 Nether") };
 	context_choice_ = std::make_unique<wxChoice>(this, 1, wxPoint(50, 130), wxSize(180, 30), 5, contexts);
 	context_choice_->SetSelection(0);
 
@@ -225,15 +225,30 @@ void BFFGui::onSearch(wxCommandEvent& evt)
 		bounds[0] = std::stoi(std::string(x_min_.GetValue()));
 		bounds[1] = std::stoi(std::string(x_max_.GetValue()));
 
+		if (bounds[1] < bounds[0])
+			throw 1;
+
 		bounds[2] = std::stoi(std::string(z_min_.GetValue()));
 		bounds[3] = std::stoi(std::string(z_max_.GetValue()));
+
+		if (bounds[3] < bounds[2])
+			throw 1;
 
 		bounds[4] = std::stoi(std::string(y_min_.GetValue()));
 		bounds[5] = std::stoi(std::string(y_max_.GetValue()));
 
+		if (bounds[5] < bounds[4])
+			throw 1;
+
 		num_threads = std::stoi(std::string(thread_count_.GetValue()));
 
+		if (num_threads <= 0)
+			throw 1;
+
 		num_results = std::stoi(std::string(numresults_.GetValue()));
+
+		if (num_results <= 0)
+			throw 1;
 
 		device = device_choice_.get()->GetString(device_choice_.get()->GetCurrentSelection());
 	}
@@ -260,11 +275,11 @@ void BFFGui::onSearch(wxCommandEvent& evt)
 		bedrock_gen_func = bedrockOverworld112;
 	else if (context_choice_->GetStringSelection() == "1.13 Overworld")
 		bedrock_gen_func = bedrockOverworld113;
-	else if (context_choice_->GetStringSelection() == "1.14 Overworld")
+	else if (context_choice_->GetStringSelection() == "1.14/1.15 Overworld")
 		bedrock_gen_func = bedrockOverworld114;
 	else if (context_choice_->GetStringSelection() == "1.13 Nether")
 		bedrock_gen_func = bedrockNether113;
-	else if (context_choice_->GetStringSelection() == "1.14 Nether")
+	else if (context_choice_->GetStringSelection() == "1.14/1.15 Nether")
 		bedrock_gen_func = bedrockNether114;
 
 	current_search_ = std::thread(threadedSearch,
