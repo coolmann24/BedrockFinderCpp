@@ -1,6 +1,6 @@
 #define CL_USE_DEPRECATED_OPENCL_1_2_APIS
 
-#include <CL\cl.hpp>
+#include <CL/cl.hpp>
 #include "BedrockSearch.h"
 #include <map>
 #include "GPUBedrockGen.h"

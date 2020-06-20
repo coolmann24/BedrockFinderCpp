@@ -6,7 +6,7 @@
 #include <functional>
 #include <iostream>
 #include <thread>
-#include <wx\wx.h>
+#include <wx/wx.h>
 #include "BFFGui.h"
 #include <atomic>
 #include <list>
