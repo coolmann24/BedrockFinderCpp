@@ -98,13 +98,6 @@ BFFGui::BFFGui() :
 
 	device_choice_ = std::make_unique<wxChoice>(this, 2, wxPoint(50, 50), wxSize(180, 30), device_strings);
 	device_choice_->SetSelection(0);
-
-	/*textlog_ << "bunch of random ass text";
-	textlog_ << "more random ass text\n";
-
-	for (int i = 0; i < 100; i++)
-		textlog_ << i << "\n";*/
-
 }
 BFFGui::~BFFGui()
 {
