@@ -29,7 +29,7 @@ void searchArea(Bounds bounds, Formation form, BedrockGenFunc func, std::atomic_
 			{
 				double progress = ((double)(x - std::get<0>(bounds))) / ((double)(std::get<1>(bounds) - std::get<0>(bounds)));
 				int int_progress = ((int)(progress * 10000));
-				std::string progress_string = std::to_string(int_progress / 100) + "." + std::to_string(int_progress % 100) + "%";
+				std::string progress_string = std::to_string(int_progress / 100) + "." + ((int_progress % 100)<10)?"0":"" + std::to_string(int_progress % 100) + "%";
 
 				wxCommandEvent* evt = new wxCommandEvent;
 				evt->SetId(1008);
